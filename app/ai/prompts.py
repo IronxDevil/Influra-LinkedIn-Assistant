@@ -26,6 +26,7 @@ Using the provided information, write a LinkedIn post (<= 200 words) in a profes
 Profile Summary: <<<{}>>>
 Trend Insights: <<<{}>>>
 Image Analysis: <<<{}>>>
+{}
 """
 
 def build_profile_prompt(text: str) -> str:
@@ -42,12 +43,14 @@ def build_image_prompt() -> str:
     """
     return IMAGE_PROMPT_TEMPLATE
 
-def build_post_prompt(profile_summary: dict, trend_insights: dict, image_analysis: dict = None) -> str:
+def build_post_prompt(profile_summary: dict, trend_insights: dict, image_analysis: dict = None, manual_context: str = None) -> str:
     """
-    Builds the prompt for post generation, optionally including image analysis.
+    Builds the prompt for post generation, optionally including image analysis and manual context.
     """
     profile_summary_json = json.dumps(profile_summary)
     trend_insights_json = json.dumps(trend_insights)
     image_analysis_json = json.dumps(image_analysis) if image_analysis else "No image analysis provided."
+    
+    manual_context_section = f"Manual Context from User: <<<{{}}>>>".format(manual_context) if manual_context else ""
 
-    return POST_PROMPT_TEMPLATE.format(profile_summary_json, trend_insights_json, image_analysis_json)
+    return POST_PROMPT_TEMPLATE.format(profile_summary_json, trend_insights_json, image_analysis_json, manual_context_section)

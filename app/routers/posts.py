@@ -11,9 +11,9 @@ from typing import List
 router = APIRouter()
 
 @router.post("/post/generate")
-def generate_post():
+def generate_post(manual_context: str = Form(None)):
     """
-    Generates a LinkedIn post using the stored profile and trend analysis.
+    Generates a LinkedIn post using the stored profile, trend analysis, and optional manual context.
     Stores the generated post in the in-memory state.
     """
     profile_summary = latest_analysis.get("profile_summary")
@@ -25,8 +25,8 @@ def generate_post():
         latest_analysis["generated_post"] = {"error": "Please analyze a profile and trends before generating a post.", "raw_response": ""}
         return RedirectResponse("/", status_code=303)
 
-    # Pass image_analysis to the prompt builder
-    prompt_text = prompts.build_post_prompt(profile_summary, trend_insights, image_analysis)
+    # Pass image_analysis and manual_context to the prompt builder
+    prompt_text = prompts.build_post_prompt(profile_summary, trend_insights, image_analysis, manual_context)
     
     # Call Gemini
     generated_post = gemini_client.call_gemini_json([prompt_text]) # Pass as list for multimodal compatibility

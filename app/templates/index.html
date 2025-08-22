@@ -98,7 +98,9 @@
         <h2 class="text-2xl font-semibold mb-4">3. Generate & Save Post</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <form action="/post/generate" method="post">
-                <p class="text-sm text-gray-600 mb-4">Uses the latest analysis results from above.</p>
+                <label for="manual_context" class="block text-sm font-medium text-gray-700">Add Manual Context (Optional):</label>
+                <textarea name="manual_context" id="manual_context" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="e.g., Mention the upcoming product launch on Friday."></textarea>
+                <p class="text-sm text-gray-600 my-4">Uses the latest analysis results from above and any manual context you provide.</p>
                 <button type="submit" class="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700">Generate Post</button>
             </form>
             {% if generated_post and not generated_post.error %}
