@@ -8,6 +8,7 @@ def get_conn():
     conn.row_factory = sqlite3.Row  # Allows accessing columns by name
     return conn
 
+
 def init_db():
     """
     Initializes the database by creating tables from the schema.sql file.
@@ -19,6 +20,7 @@ def init_db():
     conn.commit()
     conn.close()
     print("Database initialized.")
+
 
 def insert_post(content: str, hashtags: str, status: str = 'draft') -> int:
     """Inserts a new post into the database."""
@@ -33,6 +35,7 @@ def insert_post(content: str, hashtags: str, status: str = 'draft') -> int:
     conn.close()
     return last_id
 
+
 def list_posts() -> list[dict]:
     """Lists all posts from the database."""
     conn = get_conn()
@@ -42,6 +45,7 @@ def list_posts() -> list[dict]:
     conn.close()
     return posts
 
+
 def mark_posted(post_id: int):
     """Marks a post as posted and sets the posted_at timestamp."""
     conn = get_conn()
@@ -50,5 +54,18 @@ def mark_posted(post_id: int):
         "UPDATE posts SET status = 'posted', posted_at = CURRENT_TIMESTAMP WHERE id = ?",
         (post_id,)
     )
+    conn.commit()
+    conn.close()
+
+def delete_posts(post_ids: list[int]):
+    """Deletes one or more posts from the database by their IDs."""
+    if not post_ids:
+        return
+    conn = get_conn()
+    cursor = conn.cursor()
+    # Create placeholders for the IN clause
+    placeholders = ','.join('?' for _ in post_ids)
+    query = f"DELETE FROM posts WHERE id IN ({placeholders})"
+    cursor.execute(query, post_ids)
     conn.commit()
     conn.close()

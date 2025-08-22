@@ -6,6 +6,7 @@ from app.db import database
 from app import linkedin_client # Import the new linkedin_client
 import io
 import csv
+from typing import List
 
 router = APIRouter()
 
@@ -46,6 +47,21 @@ def save_post():
         database.insert_post(content, hashtags_str)
         latest_analysis["generated_post"] = None
 
+    return RedirectResponse("/", status_code=303)
+
+@router.post("/posts/delete")
+def delete_posts(post_ids: List[int] = Form(...)):
+    """
+    Deletes one or more posts from the database.
+    """
+    if not post_ids:
+        # Redirect back if no IDs were provided, though the form shouldn't allow this.
+        return RedirectResponse("/", status_code=303)
+    
+    # The Form(...) will automatically handle parsing the list of integers.
+    # In the HTML, each checkbox will have the name "post_ids" and the value of the post ID.
+    database.delete_posts(post_ids)
+    
     return RedirectResponse("/", status_code=303)
 
 @router.post("/posts/{post_id}/mark_posted")

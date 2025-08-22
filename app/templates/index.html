@@ -117,49 +117,76 @@
 
     <!-- Step 4: Drafts Dashboard & Exports -->
     <div class="bg-white p-6 rounded-lg shadow-md">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-2xl font-semibold">4. Saved Drafts</h2>
-            <div class="space-x-2">
-                <a href="/export/md" class="bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 text-sm">Export to .MD</a>
-                <a href="/export/csv" class="bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 text-sm">Export to .CSV</a>
+        <form id="delete-drafts-form" action="/posts/delete" method="post">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-semibold">4. Saved Drafts</h2>
+                <div class="space-x-2">
+                    <button type="submit" class="bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 text-sm">Delete Selected</button>
+                    <a href="/export/md" class="bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 text-sm">Export to .MD</a>
+                    <a href="/export/csv" class="bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 text-sm">Export to .CSV</a>
+                </div>
             </div>
-        </div>
-        <div class="overflow-x-auto">
-            <table class="min-w-full bg-white border">
-                <thead class="bg-gray-200">
-                    <tr>
-                        <th class="py-2 px-4 border-b">ID</th>
-                        <th class="py-2 px-4 border-b">Content</th>
-                        <th class="py-2 px-4 border-b">Status</th>
-                        <th class="py-2 px-4 border-b">Created At</th>
-                        <th class="py-2 px-4 border-b">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for post in saved_posts %}
-                    <tr class="hover:bg-gray-50">
-                        <td class="py-2 px-4 border-b text-center">{{ post.id }}</td>
-                        <td class="py-2 px-4 border-b text-sm">{{ post.content[:100] }}...</td>
-                        <td class="py-2 px-4 border-b text-center"><span class="px-2 py-1 text-xs font-semibold rounded-full {{ 'bg-green-200 text-green-800' if post.status == 'posted' else 'bg-yellow-200 text-yellow-800' }}">{{ post.status }}</span></td>
-                        <td class="py-2 px-4 border-b text-sm">{{ post.created_at }}</td>
-                        <td class="py-2 px-4 border-b text-center">
-                            {% if post.status == 'draft' %}
-                            <form action="/posts/{{ post.id }}/share" method="post">
-                                <button type="submit" class="bg-teal-500 text-white py-1 px-3 rounded-md hover:bg-teal-600 text-xs">Post to LinkedIn</button>
-                            </form>
-                            {% else %}
-                            <span class="text-gray-500 text-xs">Posted</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="5" class="py-4 px-4 text-center text-gray-500">No drafts saved yet.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white border">
+                    <thead class="bg-gray-200">
+                        <tr>
+                            <th class="py-2 px-4 border-b w-12"></th>
+                            <th class="py-2 px-4 border-b">ID</th>
+                            <th class="py-2 px-4 border-b">Content</th>
+                            <th class="py-2 px-4 border-b">Status</th>
+                            <th class="py-2 px-4 border-b">Created At</th>
+                            <th class="py-2 px-4 border-b">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for post in saved_posts %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-2 px-4 border-b text-center">
+                                <input type="checkbox" name="post_ids" value="{{ post.id }}" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            </td>
+                            <td class="py-2 px-4 border-b text-center">{{ post.id }}</td>
+                            <td class="py-2 px-4 border-b text-sm">{{ post.content[:100] }}...</td>
+                            <td class="py-2 px-4 border-b text-center"><span class="px-2 py-1 text-xs font-semibold rounded-full {{ 'bg-green-200 text-green-800' if post.status == 'posted' else 'bg-yellow-200 text-yellow-800' }}">{{ post.status }}</span></td>
+                            <td class="py-2 px-4 border-b text-sm">{{ post.created_at }}</td>
+                            <td class="py-2 px-4 border-b text-center">
+                                {% if post.status == 'draft' %}
+                                <form action="/posts/{{ post.id }}/share" method="post" class="inline-block">
+                                    <button type="submit" class="bg-teal-500 text-white py-1 px-3 rounded-md hover:bg-teal-600 text-xs">Post to LinkedIn</button>
+                                </form>
+                                {% else %}
+                                <span class="text-gray-500 text-xs">Posted</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="py-4 px-4 text-center text-gray-500">No drafts saved yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </form>
     </div>
 </div>
+
+<script>
+document.getElementById('delete-drafts-form').addEventListener('submit', function(event) {
+    event.preventDefault(); // Stop the form from submitting immediately
+
+    const checkedBoxes = this.querySelectorAll('input[name="post_ids"]:checked');
+    const count = checkedBoxes.length;
+
+    if (count === 0) {
+        alert('Please select at least one draft to delete.');
+        return; // Stop if no drafts are selected
+    }
+
+    const confirmation = confirm(`Are you sure you want to delete ${count} selected draft(s)? This action cannot be undone.`);
+
+    if (confirmation) {
+        this.submit(); // Proceed with form submission
+    }
+});
+</script>
 {% endblock %}
