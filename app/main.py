@@ -4,7 +4,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
-from app.db.database import init_db, list_posts
+from app.db import database
 from app.routers import profile, trends, posts, auth, images # Added images
 from app.state import latest_analysis
 from app.config import settings
@@ -13,7 +13,7 @@ from app.config import settings
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Initializes resources on startup and cleans up on shutdown."""
-    init_db()
+    database.init_db()
     yield
 
 
@@ -49,10 +49,15 @@ def health_check():
 @app.get("/", response_class=HTMLResponse)
 def read_root(request: Request):
     """Serves the main HTML dashboard, passing in current state."""
-    saved_posts = list_posts()
+    user_id = request.session.get("user_id")
+    profile_summary = None
+    if user_id:
+        profile_summary = database.get_user_profile(user_id)
+
+    saved_posts = database.list_posts()
     context = {
         "request": request,
-        "profile_summary": latest_analysis.get("profile_summary"),
+        "profile_summary": profile_summary,
         "trend_insights": latest_analysis.get("trend_insights"),
         "generated_post": latest_analysis.get("generated_post"),
         "saved_posts": saved_posts,
